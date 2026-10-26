@@ -1,15 +1,11 @@
-# Wayne — personal portfolio
+# Wayne
 
-Wayne 的个人网站。参考 Alejandro Buján 个人站的玻璃视觉，采用原创布局、Android / iOS / Web / AI 四合一彩色 3D 头像、液态玻璃导航和指针交互粒子。
+个人网站，分享 Android、iOS、AI、Web 相关项目与技术笔记。
 
-- 正式地址：<https://www.dyw2.xyz>
-- 根域名：<https://dyw2.xyz>，自动跳转到 www
-- 默认英文，可切换中文；支持深色与浅色主题
-- 导航高亮滑块、边缘折射、鼠标跟随光照、卡片反光和背景粒子视差 / 避让 / 连线
-- 内容：关于、Android / iOS / AI / Web、公开历程、GitHub 项目、CSDN 文章入口与联系链接
-- GitHub：248 个公开仓库快照（2026-10-26），服务器每天自动刷新
-- 部署：腾讯云香港 Ubuntu + Nginx + Let's Encrypt HTTPS；纯静态页面
-- 操作手册：[BLOG_GUIDE.md](BLOG_GUIDE.md)
+- 网站：<https://www.dyw2.xyz>
+- GitHub：<https://github.com/WayneZ01>
+- 文章：<https://blog.csdn.net/zhanwei0102>
+- 支持中英文切换，GitHub 项目每日自动更新。
 
 ## 本地运行
 
@@ -25,4 +21,4 @@ pnpm build
 bash scripts/deploy.sh
 ```
 
-发布脚本使用 Mac 上已有的 `web-server-01` SSH 配置。源码内没有服务器密码、私钥或 API Key。
+详细操作见[维护手册](BLOG_GUIDE.md)。
