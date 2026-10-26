@@ -1,8 +1,10 @@
 'use client';
 
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import repoSnapshot from './repos.json';
+import Atmosphere from './components/Atmosphere';
+import LiquidNav from './components/LiquidNav';
 type Lang = 'en' | 'zh';
 type Repo = { id: number; name: string; description: string | null; html_url: string; homepage: string | null; language: string | null; stargazers_count: number; fork: boolean; archived: boolean };
 const GITHUB = 'https://github.com/WayneZ01';
@@ -34,29 +36,6 @@ const journey = [
   { date: 'NOW', title: 'Across the boundaries', en: 'Connecting mobile, AI and the web. Exploring what comes next.', zh: '连接移动端、AI 与 Web，持续探索下一个可能。', icon: '✳' },
 ];
 function Arrow({ diagonal = false }: { diagonal?: boolean }) { return <span aria-hidden="true">{diagonal ? '↗' : '→'}</span>; }
-function Stars() {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const el = canvas.current; if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const ctx = el.getContext('2d'); if (!ctx) return;
-    let frame = 0, w = 0, h = 0, active = true;
-    const dots = Array.from({ length: 52 }, (_, i) => ({ x: ((i * 73.37) % 100) / 100, y: ((i * 31.79) % 100) / 100, r: i % 4 === 0 ? 1.7 : 1, s: (i % 2 ? 1 : -1) * 0.000015 }));
-    const resize = () => { w = innerWidth; h = innerHeight; const d = Math.min(devicePixelRatio, 2); el.width = w * d; el.height = h * d; ctx.setTransform(d, 0, 0, d, 0, 0); };
-    const draw = () => {
-      if (!active) return; ctx.clearRect(0, 0, w, h);
-      const light = document.documentElement.dataset.theme === 'light';
-      dots.forEach((p, i) => {
-        p.y = (p.y + p.s + 1) % 1; ctx.beginPath(); ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2); ctx.fillStyle = light ? 'rgba(60,80,90,.3)' : 'rgba(204,218,213,.4)'; ctx.fill();
-        dots.slice(i + 1).forEach(q => { const distance = Math.hypot((p.x - q.x) * w, (p.y - q.y) * h); if (distance < 145) { ctx.beginPath(); ctx.moveTo(p.x * w, p.y * h); ctx.lineTo(q.x * w, q.y * h); ctx.strokeStyle = 'rgba(140,160,155,' + ((1 - distance / 145) * .13) + ')'; ctx.lineWidth = .6; ctx.stroke(); } });
-      }); frame = requestAnimationFrame(draw);
-    };
-    resize(); draw(); addEventListener('resize', resize);
-    const visibility = () => { active = !document.hidden; if (active) draw(); else cancelAnimationFrame(frame); };
-    document.addEventListener('visibilitychange', visibility);
-    return () => { cancelAnimationFrame(frame); removeEventListener('resize', resize); document.removeEventListener('visibilitychange', visibility); };
-  }, []);
-  return <canvas className="constellation" ref={canvas} aria-hidden="true" />;
-}
 export default function Home() {
   const [lang, setLang] = useState<Lang>('en');
   const [theme, setTheme] = useState('dark');
@@ -67,7 +46,6 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [limit, setLimit] = useState(6);
   const t = copy[lang];
-  const navIds = ['about', 'focus', 'journey', 'projects', 'writing', 'links'];
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       try {
@@ -101,20 +79,17 @@ export default function Home() {
   function language(value: Lang) { setLang(value); try { localStorage.setItem('wayne-language', value); } catch {} }
   function toggleTheme() { const next = theme === 'dark' ? 'light' : 'dark'; setTheme(next); try { localStorage.setItem('wayne-theme', next); } catch {} }
   return <main id="top">
-    <Stars />
+    <Atmosphere />
     <a className="skip" href="#about">{lang === 'en' ? 'Skip to content' : '跳到正文'}</a>
     <header className="header">
       <a href="#top" className="wordmark" aria-label="Wayne home">w<span>.</span></a>
-      <nav className={'nav glass ' + (menu ? 'expanded' : '')} aria-label={lang === 'en' ? 'Main navigation' : '主导航'}>
-        {t.nav.map((label, i) => <a href={'#' + navIds[i]} key={label} onClick={() => setMenu(false)}>{label}</a>)}
-        <span className="nav-divider" /><button className="theme" onClick={toggleTheme} aria-label={t.theme}>{theme === 'dark' ? '☾' : '☀'}</button>
-      </nav>
+      <LiquidNav labels={t.nav} lang={lang} menu={menu} theme={theme} toggleTheme={toggleTheme} closeMenu={() => setMenu(false)} />
       <div className="header-right"><div className="language" aria-label="Language"><button aria-pressed={lang === 'en'} onClick={() => language('en')}>EN</button><span>/</span><button aria-pressed={lang === 'zh'} onClick={() => language('zh')}>中</button></div><button className="menu-button" aria-label={t.menu} aria-expanded={menu} onClick={() => setMenu(!menu)}>☰</button></div>
     </header>
     <section className="hero shell">
       <div className="hero-panel glass">
         <div className="hero-copy"><p className="eyebrow"><span className="status-dot" />{t.role}</p><p className="hello">{t.hello}</p><h1>Wayne<span className="name-dot">.</span></h1><h2>{t.headline}<br /><span>{t.headline2}</span></h2><p className="hero-description">{t.sub}</p><div className="hero-pills"><span>⌖ Beijing, China <span className="utc">UTC +08</span></span><a href={GITHUB} target="_blank" rel="noreferrer">⌘ @WayneZ01 <Arrow diagonal /></a></div><a href="#projects" className="button primary">{t.explore}<Arrow /></a></div>
-        <div className="portrait-scene"><div className="portrait-halo" /><div className="portrait-frame"><img src="/avatar.png" width="420" height="420" alt="Wayne’s original GitHub avatar" fetchPriority="high" /><span className="portrait-caption">WAYNE / DIGITAL EXPLORER</span></div><a className="floating-badge badge-top glass" href={GITHUB + '/Android_open_project'} target="_blank" rel="noreferrer"><span className="badge-icon green">◫</span><span><strong>Android & beyond</strong><small>{t.featured}</small></span><Arrow diagonal /></a><div className="floating-badge badge-bottom glass"><span className="badge-icon purple">✳</span><span><strong>Always curious.</strong><small>Mobile · AI · Web</small></span><span className="status-dot" /></div><span className="orbit-label">⌁&nbsp; A WORK IN PROGRESS</span></div>
+        <div className="portrait-scene"><div className="portrait-halo" /><div className="portrait-frame"><img src="/developer-worlds.webp" width="800" height="800" alt={lang === 'en' ? 'Android, iOS, Web and AI in one glass sculpture' : '融合 Android、iOS、Web 与 AI 的玻璃雕塑'} fetchPriority="high" /><span className="portrait-caption">ANDROID / iOS / WEB / AI</span></div><a className="floating-badge badge-top glass" href={GITHUB + '/Android_open_project'} target="_blank" rel="noreferrer"><span className="badge-icon green">◫</span><span><strong>Android & beyond</strong><small>{t.featured}</small></span><Arrow diagonal /></a><div className="floating-badge badge-bottom glass"><span className="badge-icon purple">✳</span><span><strong>Always curious.</strong><small>Mobile · AI · Web</small></span><span className="status-dot" /></div><span className="orbit-label">⌁&nbsp; A WORK IN PROGRESS</span></div>
       </div>
       <a href="#about" className="scroll-cue">{t.scroll}<span>↓</span></a>
     </section>

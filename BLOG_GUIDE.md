@@ -20,11 +20,14 @@
 
 - `app/page.tsx`：所有页面板块、个人介绍、双语文案、技术方向和社交链接。
 - `app/globals.css`：配色、玻璃效果、字体、卡片、手机布局和动效。
-- `public/avatar.png`：保持原色的 GitHub 头像，可直接用自己的图片替换。
+- `public/developer-worlds.webp`：Android、iOS、Web、AI 融合的彩色 3D 头像，800 × 800，约 89 KB。
+- `public/developer-favicon.png`：配套的浏览器图标。
 - `app/layout.tsx`：网页标题、简介、分享信息与规范网址。
 - `app/repos.json`：构建时的 GitHub 仓库兜底快照。
 - `public/data/repos.json`：服务器定时更新、访客优先读取的公开仓库数据。
-- `public/og.jpg`：社交分享封面。
+- 社交分享封面也使用 `public/developer-worlds.webp`。
+- `app/components/LiquidNav.tsx`：液态玻璃导航、指针高亮滑块、滚动章节跟踪和边缘折射。
+- `app/components/Atmosphere.tsx`：鼠标跟随光照、卡片反光、粒子视差、避让与连线。
 
 双语文案在 `copy.en` 和 `copy.zh`，兴趣方向在 `focuses`，个人公开历程在 `journey`。没有编造教育、雇佣经历、奖项或联系方式；需要添加时填写真实信息即可。
 
@@ -126,3 +129,18 @@ sudo nginx -t && sudo systemctl reload nginx
 安装时新增独立的 `wayne-portfolio` 虚拟主机、版本目录和 GitHub 数据刷新任务。之前若有相同名称的 Nginx 配置，会备份到 `/var/backups/wayne-portfolio/`。管理后台的虚拟主机未被覆盖。
 
 本次网站没有启用访客身份追踪或额外分析 SDK。
+
+## 9. 交互效果调整
+
+液态玻璃导航：在 `LiquidNav.tsx` 中调整圆角位移贴图与 `feDisplacementMap` 的 `scale`；在 CSS 的 `.liquid-nav`、`.nav-lens` 中调整透明度、折射、边缘高光及滑块弹性。
+
+全局光照：在 `Atmosphere.tsx` 中调整粒子数量、`parallaxX` / `parallaxY`、195 像素交互范围及 42 像素避让强度。CSS 的 `.glass` 定义卡片光照半径与亮度，`.mouse-aura` 定义背景光晕。
+
+参考技术：Liquid Glass React 的折射、高光和弹性思路，以及 tsParticles 的粒子连线与指针交互配置。本站采用原生 Canvas、CSS 和 SVG 实现，没有引入它们的运行时依赖或复制第三方模板代码。
+
+- https://github.com/rdev/liquid-glass-react
+- https://github.com/tsparticles/tsparticles/blob/main/markdown/Options.md
+
+Chromium 使用 SVG 边缘位移折射；Safari / Firefox 保留磨砂、色彩饱和度、亮边与滑块效果，折射支持取决于浏览器。手机触控不模拟鼠标光照。系统开启“减少动态效果”时禁用视差和粒子运动。
+
+新头像由内置图像生成工具生成。提示词与资源记录见 `docs/ASSETS.md`。

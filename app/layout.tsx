@@ -13,15 +13,15 @@ export const metadata: Metadata = {
     siteName: 'Wayne / Digital Garden',
     locale: 'en_US',
     type: 'website',
-    images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'WAYNE. 构建 · 探索 · 重塑可能' }],
+    images: [{ url: '/developer-worlds.webp', width: 800, height: 800, alt: 'Wayne — Android, iOS, Web and AI' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Wayne — Developer, Explorer & Builder',
     description: 'Android × iOS × AI × Web. Wayne’s personal blog and digital portfolio.',
-    images: ['/og.jpg'],
+    images: ['/developer-worlds.webp'],
   },
-  icons: { icon: '/avatar.png' },
+  icons: { icon: '/developer-favicon.png' },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

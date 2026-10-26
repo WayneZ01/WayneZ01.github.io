@@ -1,10 +1,11 @@
 # Wayne — personal portfolio
 
-Wayne 的个人网站。参考 Alejandro Buján 个人站的深色玻璃视觉，采用原创布局、彩色 GitHub 头像、悬浮导航和星点动效。
+Wayne 的个人网站。参考 Alejandro Buján 个人站的玻璃视觉，采用原创布局、Android / iOS / Web / AI 四合一彩色 3D 头像、液态玻璃导航和指针交互粒子。
 
 - 正式地址：<https://www.dyw2.xyz>
 - 根域名：<https://dyw2.xyz>，自动跳转到 www
 - 默认英文，可切换中文；支持深色与浅色主题
+- 导航高亮滑块、边缘折射、鼠标跟随光照、卡片反光和背景粒子视差 / 避让 / 连线
 - 内容：关于、Android / iOS / AI / Web、公开历程、GitHub 项目、CSDN 文章入口与联系链接
 - GitHub：248 个公开仓库快照（2026-10-26），服务器每天自动刷新
 - 部署：腾讯云香港 Ubuntu + Nginx + Let's Encrypt HTTPS；纯静态页面
