@@ -1,5 +1,6 @@
 'use client';
 
+import Icon from './Icon';
 import { useEffect, useRef, useState } from 'react';
 
 const ids = ['about', 'focus', 'journey', 'projects', 'writing', 'links'];
@@ -86,7 +87,7 @@ export default function LiquidNav({ labels, lang, menu, theme, toggleTheme, clos
           onClick={() => { setCurrent(ids[i]); closeMenu(); }}>{label}</a>)}
       </div>
       <span className="nav-divider" />
-      <button className="theme" onClick={toggleTheme} aria-label={lang === 'en' ? 'Toggle color theme' : '切换明暗主题'}>{theme === 'dark' ? '☾' : '☀'}</button>
+      <button className="theme" onClick={toggleTheme} aria-label={lang === 'en' ? 'Toggle color theme' : '切换明暗主题'}><Icon name={theme === 'dark' ? 'moon' : 'sun'} /></button>
     </nav>
   </>;
 }
