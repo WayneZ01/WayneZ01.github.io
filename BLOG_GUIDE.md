@@ -1,252 +1,128 @@
-# Wayne 个人博客：部署、配置与长期维护手册
+# Wayne 个人网站：腾讯云部署与维护手册
 
-这份文档解释站点如何工作、GitHub Pages 如何配置，以及以后怎样安全地更新内容和样式。
+## 1. 正式站点
 
-## 1. 站点概览
-
-| 项目 | 内容 |
+| 项目 | 配置 |
 |---|---|
-| 正式网址 | `https://waynez01.github.io/` |
-| GitHub 仓库 | `WayneZ01/WayneZ01.github.io` |
-| 默认分支 | `main` |
-| 技术栈 | Next.js 16 + React 19 + TypeScript + CSS |
-| 语言 | 默认英文，可在右上角手动切换中文 |
-| 发布方式 | GitHub Actions 自动部署 GitHub Pages |
-| GitHub 数据 | 浏览器端调用 GitHub Public API，自动读取公开仓库 |
+| 主站 | https://www.dyw2.xyz |
+| 根域名 | https://dyw2.xyz，301 跳转主站 |
+| 腾讯云服务器 | 43.128.35.110，香港，Ubuntu |
+| SSH 配置名称 | web-server-01 |
+| 部署用户 | deploy |
+| 页面目录 | /var/www/wayne-portfolio/current |
+| 历史版本 | /var/www/wayne-portfolio/releases/ |
+| Nginx 配置 | /etc/nginx/sites-available/wayne-portfolio |
+| HTTPS 证书 | /etc/letsencrypt/live/www.dyw2.xyz/ |
 
-仓库名必须精确等于 `WayneZ01.github.io`。GitHub 会把这种“用户名同名 Pages 仓库”映射到根域名 `https://waynez01.github.io/`，因此访问地址不需要额外的项目路径。
+个人站使用独立虚拟主机，`admin.dyw2.xyz` 的管理后台及其 API 配置保持独立。
 
-## 2. 第一次启用 GitHub Pages
+## 2. 网站内容怎样修改
 
-代码第一次推送后，请在 GitHub 中检查一次配置：
+- `app/page.tsx`：所有页面板块、个人介绍、双语文案、技术方向和社交链接。
+- `app/globals.css`：配色、玻璃效果、字体、卡片、手机布局和动效。
+- `public/avatar.png`：保持原色的 GitHub 头像，可直接用自己的图片替换。
+- `app/layout.tsx`：网页标题、简介、分享信息与规范网址。
+- `app/repos.json`：构建时的 GitHub 仓库兜底快照。
+- `public/data/repos.json`：服务器定时更新、访客优先读取的公开仓库数据。
+- `public/og.jpg`：社交分享封面。
 
-1. 打开仓库 `WayneZ01/WayneZ01.github.io`。
-2. 点击 **Settings**。
-3. 左侧点击 **Pages**。
-4. 在 **Build and deployment** → **Source** 中选择 **GitHub Actions**。
-5. 打开仓库的 **Actions** 页面，找到 `Deploy blog to GitHub Pages`。
-6. 等待 Build 与 Deploy 两个任务都显示绿色勾号。
-7. 访问 `https://waynez01.github.io/`。
+双语文案在 `copy.en` 和 `copy.zh`，兴趣方向在 `focuses`，个人公开历程在 `journey`。没有编造教育、雇佣经历、奖项或联系方式；需要添加时填写真实信息即可。
 
-如果 Source 已经显示 GitHub Actions，则不用重复修改。
+默认英文。访客手动选择的语言和主题保存在浏览器本地，之后访问会恢复偏好。Fork 项目明确显示 Fork 标签，避免误认为原创作品。
 
-首次发布通常需要几十秒到几分钟。之后每次向 `main` 分支推送，都会自动重新构建并覆盖线上版本。
+## 3. 本地预览与构建
 
-## 3. 自动部署的工作原理
-
-自动部署配置位于：
-
-```text
-.github/workflows/deploy-pages.yml
-```
-
-流程如下：
-
-```text
-修改代码 → 推送 main → GitHub Actions 安装依赖 → pnpm build
-         → 生成 out/ 静态文件 → 发布 GitHub Pages → 网站更新
-```
-
-通常不要手动编辑 `out/`，也不要把 `out/` 提交到仓库；它由自动化流程生成。
-
-## 4. 本地修改与预览
-
-### 环境要求
-
-- Node.js 22 或更高版本
-- pnpm 11
-- Git
-
-### 下载与启动
+建议安装 Node.js 22+ 和 pnpm。首次下载源码后：
 
 ```bash
-git clone https://github.com/WayneZ01/WayneZ01.github.io.git
-cd WayneZ01.github.io
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-浏览器打开：
-
-```text
-http://localhost:3000/
-```
-
-修改文件后页面会自动刷新。
-
-### 发布修改
+浏览器打开终端打印的网址。正式构建：
 
 ```bash
-git add .
-git commit -m "更新博客内容"
-git push origin main
-```
-
-然后到仓库的 **Actions** 页面观察部署状态。绿色表示成功；红色表示失败，点进去可查看具体步骤和错误信息。
-
-## 5. 最常改的文件
-
-### 修改首页文字、链接和板块
-
-编辑：
-
-```text
-app/page.tsx
-```
-
-常见修改位置：
-
-- 首屏标题：搜索 `构建。`、`探索。`、`重塑可能。`
-- 个人简介：搜索 `我是 Wayne`
-- 技术领域：修改 `focusAreas`（当前为 Android、iOS、AI、Web）
-- 中英文界面：修改 `copy.en` 与 `copy.zh`；英文是默认语言
-- 社交链接：搜索 `github.com/WayneZ01`、`blog.csdn.net`
-- 关于文字：搜索 `2016 年加入 GitHub`
-
-### 修改颜色、动画和排版
-
-编辑：
-
-```text
-app/globals.css
-```
-
-顶部 `:root` 中是核心色值：
-
-```css
---night: #080914;  /* 背景 */
---violet: #8b5cf6; /* 紫色 */
---cyan: #31e7ff;   /* 青色 */
---lime: #c5ff4a;   /* 酸性绿 */
-```
-
-移动端样式位于文件底部的 `@media` 规则中。站点已支持 `prefers-reduced-motion`，不建议删除这部分，否则对不适合强动画的访客不友好。
-
-### 修改网页标题和分享信息
-
-编辑：
-
-```text
-app/layout.tsx
-```
-
-这里控制：
-
-- 浏览器标签标题
-- 搜索结果描述
-- Open Graph 信息
-- X / Twitter 分享卡片
-
-分享封面文件是：
-
-```text
-public/og.jpg
-```
-
-替换时建议保持 `1200 × 630` JPEG，并保持文件名不变。
-
-## 6. GitHub 项目墙怎样自动更新
-
-首页会请求以下公开接口：
-
-```text
-https://api.github.com/users/WayneZ01/repos
-```
-
-它会读取最多三页、共 300 个公开仓库，并自动过滤已归档仓库。因此：
-
-- 新建公开仓库后，无需修改博客代码；刷新页面即可出现。
-- 修改仓库的 Description、Language、Homepage 后，博客会自动显示新内容。
-- 私有仓库不会出现，也不会被读取。
-- 项目卡片支持“全部 / 原创 / 收藏（Fork）”筛选和关键词搜索。
-- GitHub 未响应或达到公开 API 限额时，会显示内置的精选项目，不会出现空白页。
-
-建议在每个重点 GitHub 仓库中维护好：
-
-- **About → Description**：一句话说明项目做什么。
-- **About → Website**：有线上演示时填写网址。
-- **Topics**：填写 android、kotlin、ai 等关键词。
-- README：说明安装、截图、用法与许可证。
-
-## 7. 新增真正的博客文章
-
-当前首页把 CSDN 作为主要文章出口。如果之后希望文章直接托管在本站，推荐按以下方式升级：
-
-1. 新建 `content/posts/` 文件夹，用 Markdown 或 MDX 保存文章。
-2. 新增 `/blog` 文章列表页。
-3. 新增 `/blog/[slug]` 文章详情页。
-4. 构建时生成静态页面和每篇文章的独立分享元数据。
-5. 如需评论，可使用 GitHub Discussions + Giscus。
-
-文章文件建议使用这样的头部信息：
-
-```md
----
-title: 一篇文章的标题
-description: 一句话摘要
-date: 2026-08-21
-tags: [Android, AI]
----
-```
-
-这个升级不会影响现有 GitHub 项目墙和首页设计。
-
-## 8. 绑定自定义域名（可选）
-
-例如以后购买 `wayne.dev`：
-
-1. 在仓库 **Settings → Pages → Custom domain** 输入域名。
-2. 在域名服务商添加 GitHub Pages 要求的 DNS 记录。
-3. 等 DNS 生效后勾选 **Enforce HTTPS**。
-4. 把 `app/layout.tsx`、`app/sitemap.ts`、`app/robots.ts` 中的 `https://waynez01.github.io` 改为新域名。
-
-绑定之前不要添加 `CNAME` 文件，以免线上访问异常。
-
-## 9. 常见问题排查
-
-### Actions 构建失败
-
-先本地执行：
-
-```bash
-pnpm install
+pnpm lint
 pnpm build
 ```
 
-本地能复现时，优先修复终端显示的第一个错误。常见原因是 TypeScript 类型错误、JSX 标签未闭合或依赖锁文件没有同步。
+静态产物在 `out/`，不需要在服务器上长期运行 Node.js 网站进程，也不占用管理后台的 3000 端口。
 
-### 页面显示 404
+## 4. 一条命令更新正式站
 
-检查：
+在这个项目的根目录运行：
 
-- 仓库名是否精确为 `WayneZ01.github.io`。
-- 默认分支是否为 `main`。
-- Settings → Pages → Source 是否为 GitHub Actions。
-- Actions 中最近一次 Deploy 是否成功。
+```bash
+bash scripts/deploy.sh
+```
 
-### 网站已部署但内容没更新
+脚本会先构建网站，再通过已配置的 SSH 密钥上传压缩包，创建带时间戳的新版本，验证首页文件存在后切换 `current` 链接。更新网站内容通常无需 sudo，也无需重启 Nginx。历史版本会保留。
 
-1. 确认修改已推送到 `main`。
-2. 确认最新 Actions 已完成。
-3. 强制刷新浏览器：macOS 用 `Command + Shift + R`。
-4. 等待 GitHub Pages 缓存刷新，通常只需几分钟。
+Mac 的 SSH 配置保存在 `~/.ssh/config`，使用名称 `web-server-01` 连接。私钥和服务器密码都不应提交到 GitHub。
 
-### 项目墙只显示精选项目
+## 5. 回滚到上个版本
 
-这通常表示 GitHub Public API 暂时不可用或达到未登录访问限额。站点会自动降级，不影响主页面。稍后刷新即可。
+```bash
+ssh web-server-01
+cat /var/www/wayne-portfolio/previous-release
+ls -l /var/www/wayne-portfolio/releases
+```
 
-## 10. 发布前检查清单
+确认上一个版本的完整目录后，手动将下面的 `YYYYMMDD-HHMMSS` 替换为真实版本：
 
-- [ ] `pnpm build` 成功。
-- [ ] 桌面端和手机端首屏文字没有遮挡。
-- [ ] GitHub、CSDN 与项目链接可访问。
-- [ ] 新增图片已压缩，且没有隐私信息。
-- [ ] `public/og.jpg` 中的文字正确。
-- [ ] 没有把 `.env`、Token、密钥或个人隐私文件提交到仓库。
-- [ ] 推送后 GitHub Actions 变绿。
+```bash
+ln -sfn /var/www/wayne-portfolio/releases/YYYYMMDD-HHMMSS /var/www/wayne-portfolio/current.next
+mv -Tf /var/www/wayne-portfolio/current.next /var/www/wayne-portfolio/current
+curl -I https://www.dyw2.xyz
+```
 
-## 11. 安全说明
+不要删除当前版本，也不要执行针对整个 `/var/www` 的清理命令。
 
-这个站点只读取公开 GitHub 数据，不需要 GitHub Token。不要把个人访问令牌、API Key 或密码写进前端代码；静态网站中的内容都可能被访客看到。
+## 6. GitHub 数据自动更新
 
-如果未来加入需要密钥的服务，应通过受支持的服务端 API 或后端代理处理，不能直接把密钥放进 `app/page.tsx`、环境变量构建产物或 GitHub Pages。
+服务器的 `wayne-github-sync.timer` 每天北京时间约 11:15–11:30 自动执行一次更新。同步仅访问 GitHub 的公开仓库接口，不使用令牌，不读取私有仓库。
+
+流程是 GitHub Public API → 服务器 JSON 快照 → 浏览器读取本站数据。这样访客无需等待跨境 GitHub API。网络请求失败时保留旧数据；页面还内置一份构建时快照。
+
+查看定时任务：
+
+```bash
+ssh web-server-01
+systemctl list-timers wayne-github-sync.timer
+systemctl status wayne-github-sync.service
+sudo journalctl -u wayne-github-sync.service -n 30
+```
+
+手动刷新：
+
+```bash
+node /var/www/wayne-portfolio/update-github.mjs /var/www/wayne-portfolio/current/data/repos.json
+```
+
+修改 GitHub 仓库的 Description、Homepage 后，下一次同步会更新项目卡片。新增公开仓库也会自动出现。项目支持原创 / Fork 筛选、搜索与分批加载。
+
+## 7. 域名和 HTTPS
+
+腾讯云 DNS 中 `@` 和 `www` 的 A 记录应指向 `43.128.35.110`。主站规范网址为 `https://www.dyw2.xyz`，HTTP 和根域名统一跳转到它。
+
+证书使用服务器现有 Certbot 账户申请，覆盖 `www.dyw2.xyz` 与 `dyw2.xyz`。原有 Certbot 定时任务负责续期。排查时运行：
+
+```bash
+sudo certbot certificates
+systemctl list-timers certbot.timer
+sudo nginx -t
+```
+
+修改 Nginx 后先运行配置检查，再 reload；只有检查通过才重载：
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+## 8. 初次安装与已有站点保护
+
+`deploy/install.sh` 是本次服务器首次安装脚本，常规更新使用 `scripts/deploy.sh`，不要反复执行首次安装。
+
+安装时新增独立的 `wayne-portfolio` 虚拟主机、版本目录和 GitHub 数据刷新任务。之前若有相同名称的 Nginx 配置，会备份到 `/var/backups/wayne-portfolio/`。管理后台的虚拟主机未被覆盖。
+
+本次网站没有启用访客身份追踪或额外分析 SDK。
