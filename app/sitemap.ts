@@ -3,5 +3,5 @@ import type { MetadataRoute } from 'next';
 export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [{ url: 'https://waynez01.github.io', lastModified: new Date(), changeFrequency: 'weekly', priority: 1 }];
+  return [{ url: 'https://www.dyw2.xyz', lastModified: new Date(), changeFrequency: 'weekly', priority: 1 }];
 }

@@ -1,222 +1,108 @@
 'use client';
 
+/* eslint-disable @next/next/no-img-element */
 import { useEffect, useMemo, useState } from 'react';
-
-type Repo = {
-  id: number;
-  name: string;
-  description: string | null;
-  html_url: string;
-  homepage: string | null;
-  language: string | null;
-  stargazers_count: number;
-  forks_count: number;
-  updated_at: string;
-  fork: boolean;
-  archived: boolean;
-};
-
+import repoSnapshot from './repos.json';
+import Atmosphere from './components/Atmosphere';
+import LiquidNav from './components/LiquidNav';
+import { PortraitMotion, ShiningName } from './components/HeroMotion';
+import Icon, { type IconName } from './components/Icon';
 type Lang = 'en' | 'zh';
-
-const fallbackRepos: Repo[] = [
-  { id: 1, name: 'Android_open_project', description: 'Android 开源项目雷达：记录工作中值得关注和复用的优秀项目。', html_url: 'https://github.com/WayneZ01/Android_open_project', homepage: '', language: 'Android', stargazers_count: 19, forks_count: 2, updated_at: '2025-09-18', fork: false, archived: false },
-  { id: 2, name: 'zhuzhiliao', description: '竹知了——一转就哇哇叫的传统玩具 Web 模拟版。', html_url: 'https://github.com/WayneZ01/zhuzhiliao', homepage: 'https://zhuzhiliao.icu', language: 'Web', stargazers_count: 0, forks_count: 0, updated_at: '2026-08-07', fork: true, archived: false },
-  { id: 3, name: 'BloodSugarApp', description: '基于 Kotlin 与 Jetpack Compose 的智能血糖管理 Android 应用。', html_url: 'https://github.com/WayneZ01/BloodSugarApp', homepage: '', language: 'Kotlin', stargazers_count: 0, forks_count: 0, updated_at: '2026-07-29', fork: true, archived: false },
-  { id: 4, name: 'Snapzy', description: '开源原生 macOS 截图与录屏工具，轻量而专注。', html_url: 'https://github.com/WayneZ01/Snapzy', homepage: 'https://snapzy.app', language: 'Swift', stargazers_count: 0, forks_count: 0, updated_at: '2026-08-03', fork: true, archived: false },
-  { id: 5, name: 'SmartisanWeather-Revived', description: '使用现代 Android 技术栈重写与复活锤子天气。', html_url: 'https://github.com/WayneZ01/SmartisanWeather-Revived', homepage: '', language: 'Kotlin', stargazers_count: 0, forks_count: 0, updated_at: '2026-07-29', fork: true, archived: false },
-  { id: 6, name: 'dbx', description: '轻量级跨平台数据库客户端，覆盖多种主流数据库。', html_url: 'https://github.com/WayneZ01/dbx', homepage: 'https://dbxio.com', language: 'Desktop', stargazers_count: 0, forks_count: 0, updated_at: '2026-07-16', fork: true, archived: false },
+type Repo = { id: number; name: string; description: string | null; html_url: string; homepage: string | null; language: string | null; stargazers_count: number; fork: boolean; archived: boolean };
+const GITHUB = 'https://github.com/WayneZ01';
+const seed: Repo[] = [
+  { id: 94405445, name: 'Android_open_project', description: 'A curated map of Android open source: classic libraries, Compose, Kotlin Multiplatform and on-device AI.', html_url: GITHUB + '/Android_open_project', homepage: null, language: 'Android', stargazers_count: 19, fork: false, archived: false },
+  { id: 2, name: 'WayneZ01.github.io', description: 'My personal corner of the internet. Projects, writing and a little curiosity.', html_url: GITHUB + '/WayneZ01.github.io', homepage: 'https://waynez01.github.io', language: 'TypeScript', stargazers_count: 0, fork: false, archived: false },
+  { id: 3, name: 'BloodSugarApp', description: 'An exploration of health tracking with Kotlin and Jetpack Compose.', html_url: GITHUB + '/BloodSugarApp', homepage: null, language: 'Kotlin', stargazers_count: 0, fork: true, archived: false },
+  { id: 4, name: 'Snapzy', description: 'Native macOS screenshots and screen recording. Part of my open-source radar.', html_url: GITHUB + '/Snapzy', homepage: null, language: 'Swift', stargazers_count: 0, fork: true, archived: false },
+  { id: 5, name: 'SmartisanWeather-Revived', description: 'A familiar weather experience revisited with modern Android tools.', html_url: GITHUB + '/SmartisanWeather-Revived', homepage: null, language: 'Kotlin', stargazers_count: 0, fork: true, archived: false },
+  { id: 6, name: 'zhuzhiliao', description: 'A traditional bamboo toy, reimagined as a playful experiment on the web.', html_url: GITHUB + '/zhuzhiliao', homepage: null, language: 'JavaScript', stargazers_count: 0, fork: true, archived: false },
 ];
-
-const focusAreas = [
-  { no: '01', title: 'ANDROID SYSTEMS', en: 'From interaction components to full products, crafting reliable Android experiences and efficient engineering systems.', zh: '从交互组件、工具链到完整应用，持续打磨 Android 体验与工程效率。', tags: ['KOTLIN', 'COMPOSE', 'ARCHITECTURE'], glyph: '◫' },
-  { no: '02', title: 'iOS CRAFT', en: 'Native Apple experiences shaped through Swift, SwiftUI, thoughtful motion, and obsessive product polish.', zh: '用 Swift、SwiftUI、细腻动效与产品打磨，构建原生 Apple 体验。', tags: ['SWIFT', 'SWIFTUI', 'APPLE'], glyph: '◎' },
-  { no: '03', title: 'AI NATIVE', en: 'Turning AI from a feature into a product capability through agents, automation, and intelligent interfaces.', zh: '把 AI 从功能点变成产品能力：Agents、自动化工作流与智能体验。', tags: ['AGENTS', 'AUTOMATION', 'PRODUCT'], glyph: '✦' },
-  { no: '04', title: 'WEB / OPEN SOURCE', en: 'Building for the open web while tracking, testing, and sharing technology worth reusing.', zh: '为开放 Web 构建，同时追踪、验证并分享真正值得复用的技术。', tags: ['WEB', 'CURATION', 'SHARING'], glyph: '⌁' },
-];
-
 const copy = {
   en: {
-    nav: ['PROJECTS', 'FOCUS', 'ABOUT'], heroLabel: 'HELLO, DIGITAL WORLD', hero: ['BUILD.', 'EXPLORE.', 'RESHAPE POSSIBILITY.'],
-    metrics: ['PUBLIC REPOS', 'BUILDING IN PUBLIC', 'REPO STARS', 'BASED / WORLD BOUND'],
-    intro: <>I&apos;m Wayne, a developer turning complex ideas into useful products across <em>Android, iOS, AI, and the Web</em>.</>,
-    explore: 'EXPLORE PROJECTS', articles: 'READ MY WRITING', codeMode: "'insight into action'", projectsLabel: 'CODE IN THE WILD',
-    projectsTitle: <>Projects aren&apos;t a list.<br /><i>They&apos;re a trail.</i></>, projectsIntro: 'A live wall connected directly to GitHub. Every new public repository becomes part of this evolving archive.',
-    filters: ['ALL', 'ORIGINAL', 'FORK / RADAR'], search: 'Search 213 repositories…', noDescription: 'An open-source project still evolving. Visit GitHub to see what it is becoming.',
-    empty: 'No matching project. Try another keyword.', load: 'LOAD MORE', allRepos: 'VIEW ALL 213 REPOSITORIES ON GITHUB ↗', connecting: 'CONNECTING TO GITHUB…', live: 'LIVE DATA', originals: 'ORIGINAL REPOS', fallback: 'SHOWING OFFLINE SELECTION',
-    focusLabel: 'THE OPERATING SYSTEM', focusTitle: <>I care about more<br /><i>than the technology.</i></>, focusIntro: 'I care how technology is organized, felt, and turned into a better experience in the real world.',
-    aboutLabel: 'BEHIND THE SCREEN', quote: <>“Observe the world.<br />Then write a little change.”</>, about: 'On GitHub since 2016, based in Beijing. I work across Android, iOS, AI-native workflows, the Web, product experience, and open-source craft. This site is my digital garden—projects, observations, and long-term thinking, always in motion.',
-    idea: 'HAVE AN IDEA?', signal: <>Move it from “maybe”<br />to <span>“already live.”</span></>, back: 'BACK TO TOP ↑', avatar: 'Wayne’s GitHub avatar', mainNav: 'Main navigation', filtersLabel: 'Project filters', searchLabel: 'Search GitHub repositories',
+    nav: ['About', 'Focus', 'Journey', 'Projects', 'Writing', 'Links'], role: 'DEVELOPER · BEIJING, CN', hello: 'Hello, I’m', headline: 'A curious mind.', headline2: 'A builder at heart.', sub: 'Building thoughtful experiences across Android, iOS, AI and the Web.', explore: 'Explore my work', github: 'Find me on GitHub', scroll: 'SCROLL TO EXPLORE', about: 'A little about me', aboutSide: 'Beijing → the open web', aboutText: 'I’m Wayne, a developer based in Beijing. I’m drawn to the space where thoughtful design meets useful technology — from native mobile experiences to intelligent tools and small experiments on the web.', aboutMore: 'Since joining GitHub in 2016, I’ve kept a growing collection of projects, ideas and open-source discoveries. This is my little corner of the internet: a place to connect the dots and share what comes next.', quote: 'Observe the world. Then write a little change.', focuses: 'Things I’m drawn to', focusSide: 'Four directions. One curiosity.', journey: 'Building, learning, sharing', journeySide: 'A journey in public', projects: 'Code & curiosity', projectsSide: 'Selected work & open-source discoveries', filters: ['All projects', 'Original', 'Forks & discoveries'], search: 'Find a project…', source: 'View source', live: 'Live site', more: 'Show more projects', none: 'No projects found. Try another search.', synced: 'Synced with GitHub', snapshot: 'Curated selection · live sync unavailable', loading: 'Connecting to GitHub', writing: 'Notes along the way', writingSide: 'Ideas worth writing down', writingTitle: 'From solving a problem\nto sharing a perspective.', writingText: 'Technical notes, development discoveries and thoughts about building things. My writing lives on CSDN.', read: 'Read my articles', connect: 'Let’s connect', connectSide: 'Good things start with a conversation.', connectTitle: 'Have something\nin mind?', connectText: 'An interesting project, an open-source idea, or just a hello — find me where the code lives.', back: 'Back to top', footer: 'Made with curiosity. Always evolving.', originalTag: 'Original project', forkTag: 'Fork · exploring', noDesc: 'An open-source discovery. Explore the repository to learn more.', theme: 'Toggle color theme', menu: 'Open navigation', featured: 'Open source, since 2017',
   },
   zh: {
-    nav: ['项目', '领域', '关于'], heroLabel: '你好，数字世界', hero: ['构建。', '探索。', '重塑可能。'],
-    metrics: ['公开仓库', '持续公开构建', '仓库星标', '立足北京 / 面向世界'],
-    intro: <>我是 Wayne，一名把复杂想法变成可用产品的开发者。长期行走在 <em>Android、iOS、AI 与 Web</em> 的交界处。</>,
-    explore: '探索项目', articles: '阅读我的文章', codeMode: "'洞察世界'", projectsLabel: '代码，正在发生',
-    projectsTitle: <>项目不是列表，<br /><i>是留下的轨迹。</i></>, projectsIntro: '直接连接 GitHub 的实时项目墙。新的公开仓库会自动进入这里，持续生长。',
-    filters: ['全部', '原创', '收藏 / FORK'], search: '搜索 213 个仓库…', noDescription: '一个仍在演化中的开源项目，去 GitHub 看看它正在构建什么。',
-    empty: '没有找到匹配的项目。换个关键词试试。', load: '加载更多', allRepos: '在 GitHub 查看全部 213 个仓库 ↗', connecting: '正在连接 GitHub…', live: '实时数据', originals: '个原创仓库', fallback: '当前展示离线精选',
-    focusLabel: '我的运行系统', focusTitle: <>我关注的，<br /><i>不是技术本身。</i></>, focusIntro: '而是技术如何被组织、被感知，最后变成真实世界里更好的体验。',
-    aboutLabel: '屏幕背后', quote: <>“洞察世界，<br />然后写下一点改变。”</>, about: '2016 年加入 GitHub，来自北京。关注 Android、iOS、AI 原生工作流、Web、产品体验与开源创造。这个站点是我的数字花园：项目、观察与长期思考都会在这里继续生长。',
-    idea: '有个想法？', signal: <>让它从“也许”<br />变成<span>“已经上线”</span>。</>, back: '回到顶部 ↑', avatar: 'Wayne 的 GitHub 头像', mainNav: '主导航', filtersLabel: '项目筛选', searchLabel: '搜索 GitHub 仓库',
+    nav: ['关于', '领域', '历程', '项目', '文章', '联系'], role: '开发者 · 中国，北京', hello: '你好，我是', headline: '保持好奇。', headline2: '认真创造。', sub: '在 Android、iOS、AI 与 Web 之间，构建有温度的数字体验。', explore: '探索我的作品', github: '在 GitHub 找到我', scroll: '向下探索', about: '关于我的一点介绍', aboutSide: '立足北京，连接开放世界', aboutText: '我是 Wayne，一名来自北京的开发者。喜欢设计与技术相遇的地方，从原生移动应用、智能工具，到 Web 上的小实验，让复杂的事情变得简单而好用。', aboutMore: '2016 年加入 GitHub 以来，我持续记录项目、想法与值得关注的开源发现。这里是我的一小片互联网：串联探索的线索，也分享下一段旅程。', quote: '洞察世界，然后写下一点改变。', focuses: '我的兴趣所在', focusSide: '四个方向，同一份好奇心', journey: '构建，学习，分享', journeySide: '公开记录的探索轨迹', projects: '代码与好奇心', projectsSide: '个人作品与开源发现', filters: ['全部项目', '原创项目', 'Fork 与探索'], search: '搜索一个项目…', source: '查看源码', live: '访问网站', more: '查看更多项目', none: '没有找到匹配的项目，请换个关键词。', synced: '已与 GitHub 同步', snapshot: '精选项目 · 实时同步暂不可用', loading: '正在连接 GitHub', writing: '沿途的笔记', writingSide: '把有价值的想法写下来', writingTitle: '从解决一个问题，\n到分享一种思考。', writingText: '技术笔记、开发发现，以及关于创造的思考。我的文章发布在 CSDN。', read: '阅读我的文章', connect: '保持联系', connectSide: '好的故事，往往从交流开始', connectTitle: '有一个想法，\n想一起聊聊？', connectText: '一个有趣的项目、一个开源想法，或者只是打声招呼——从代码开始，找到我。', back: '回到顶部', footer: '因好奇而创造，持续生长。', originalTag: '原创项目', forkTag: 'Fork · 探索中', noDesc: '一个值得探索的开源项目，前往仓库了解更多。', theme: '切换明暗主题', menu: '打开导航', featured: '始于 2017 的开源整理',
   },
-} as const;
-
-function formatDate(date: string, lang: Lang) {
-  return new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'zh-CN', { year: 'numeric', month: 'short' }).format(new Date(date));
-}
-
+};
+const focuses = [
+  { name: 'Android', icon: 'android' as IconName, color: 'green', tags: 'Kotlin · Compose · Architecture', en: 'Native experiences, from the smallest interaction to the systems behind it.', zh: '从细微交互，到背后的工程系统，探索可靠而流畅的原生体验。' },
+  { name: 'iOS', icon: 'ios' as IconName, color: 'blue', tags: 'Swift · SwiftUI · Apple', en: 'A fascination with the details that make software feel natural.', zh: '关注让软件自然、细腻、恰到好处的每一个细节。' },
+  { name: 'AI', icon: 'ai' as IconName, color: 'purple', tags: 'Agents · Automation · Workflows', en: 'Exploring intelligent tools that help turn a good idea into something real.', zh: '探索智能工具与工作流，让好的想法更快成为现实。' },
+  { name: 'Web', icon: 'web' as IconName, color: 'orange', tags: 'React · TypeScript · Open source', en: 'An open canvas for useful products and unexpected little experiments.', zh: '一块开放的画布，用来构建实用产品，也容纳意料之外的小实验。' },
+];
+const journey = [
+  { date: '2016', title: 'Hello, GitHub', en: 'A first step into building and learning in the open.', zh: '加入 GitHub，开始在开放的世界里学习与构建。', icon: 'github' as IconName },
+  { date: '2017', title: 'Android Open Project', en: 'Started a curated collection of Android libraries, tools and references.', zh: '建立 Android 开源项目导航，整理开发中值得复用的资源。', icon: 'android' as IconName },
+  { date: 'NOW', title: 'Across the boundaries', en: 'Connecting mobile, AI and the web. Exploring what comes next.', zh: '连接移动端、AI 与 Web，持续探索下一个可能。', icon: 'ai' as IconName },
+];
+function Arrow({ diagonal = false }: { diagonal?: boolean }) { return <Icon name={diagonal ? 'external' : 'arrow'} />; }
 export default function Home() {
   const [lang, setLang] = useState<Lang>('en');
-  const [repos, setRepos] = useState<Repo[]>(fallbackRepos);
-  const [repoStatus, setRepoStatus] = useState<'loading' | 'live' | 'fallback'>('loading');
-  const [filter, setFilter] = useState<'all' | 'original' | 'forks'>('all');
+  const [theme, setTheme] = useState('dark');
+  const [menu, setMenu] = useState(false);
+  const [repos, setRepos] = useState<Repo[]>(repoSnapshot.length ? repoSnapshot : seed);
+  const [status, setStatus] = useState<'loading' | 'live' | 'snapshot'>('loading');
+  const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
-  const [visible, setVisible] = useState(9);
+  const [limit, setLimit] = useState(6);
   const t = copy[lang];
-
   useEffect(() => {
-    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
-  }, [lang]);
-
-  useEffect(() => {
-    const onPointer = (event: PointerEvent) => {
-      document.documentElement.style.setProperty('--pointer-x', `${event.clientX}px`);
-      document.documentElement.style.setProperty('--pointer-y', `${event.clientY}px`);
-    };
-    window.addEventListener('pointermove', onPointer, { passive: true });
-    return () => window.removeEventListener('pointermove', onPointer);
+    const frame = requestAnimationFrame(() => {
+      try {
+        const saved = localStorage.getItem('wayne-language'); if (saved === 'zh' || saved === 'en') setLang(saved);
+        if (localStorage.getItem('wayne-theme') === 'light') setTheme('light');
+      } catch { /* Private browsing may disable storage. */ }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
-
+  useEffect(() => { document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en'; }, [lang]);
+  useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all([1, 2, 3].map(page => fetch(`https://api.github.com/users/WayneZ01/repos?per_page=100&sort=updated&page=${page}`, { signal: controller.signal }).then(response => {
-      if (!response.ok) throw new Error('GitHub API unavailable');
-      return response.json() as Promise<Repo[]>;
-    }))).then(pages => {
-      const next = pages.flat().filter(repo => !repo.archived && repo.name !== 'WayneZ01.github.io');
-      setRepos(next);
-      setRepoStatus('live');
-    }).catch(error => {
-      if (error.name !== 'AbortError') setRepoStatus('fallback');
-    });
-    return () => controller.abort();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    (async () => {
+      try {
+        const cached = await fetch('/data/repos.json', { signal: controller.signal }).catch(() => null);
+        if (cached?.ok) { const data = await cached.json(); if (Array.isArray(data.repos) && data.repos.length) { setRepos(data.repos); setStatus('live'); return; } }
+        const result: Repo[] = [];
+        for (let page = 1; page <= 20; page++) {
+          const response = await fetch('https://api.github.com/users/WayneZ01/repos?per_page=100&sort=updated&page=' + page, { signal: controller.signal });
+          if (!response.ok) throw new Error('GitHub unavailable');
+          const list: Repo[] = await response.json(); result.push(...list); if (list.length < 100) break;
+        }
+        if (result.length) { setRepos(result); setStatus('live'); } else setStatus('snapshot');
+      } catch { setStatus('snapshot'); } finally { clearTimeout(timer); }
+    })();
+    return () => { clearTimeout(timer); controller.abort(); };
   }, []);
-
-  const filteredRepos = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return repos.filter(repo => {
-      const matchesType = filter === 'all' || (filter === 'original' ? !repo.fork : repo.fork);
-      const matchesQuery = !needle || `${repo.name} ${repo.description ?? ''} ${repo.language ?? ''}`.toLowerCase().includes(needle);
-      return matchesType && matchesQuery;
-    });
-  }, [repos, query, filter]);
-
-  const originals = repos.filter(repo => !repo.fork).length;
-  const totalStars = repos.reduce((sum, repo) => sum + repo.stargazers_count, 0);
-
-  return (
-    <main>
-      <div className="noise" aria-hidden="true" />
-      <div className="pointer-glow" aria-hidden="true" />
-      <div className="orb orb-one" aria-hidden="true" />
-      <div className="orb orb-two" aria-hidden="true" />
-
-      <nav className="nav shell" aria-label={t.mainNav}>
-        <a className="brand" href="#top" aria-label="Wayne home"><span className="brand-mark">W</span><span>WAYNE<span className="accent-dot">.</span></span></a>
-        <div className="nav-links">
-          <a href="#projects">{t.nav[0]}</a><a href="#focus">{t.nav[1]}</a><a href="#about">{t.nav[2]}</a>
-        </div>
-        <div className="nav-actions">
-          <div className="language-switch" aria-label="Language / 语言"><button className={lang === 'en' ? 'active' : ''} onClick={() => setLang('en')} aria-pressed={lang === 'en'}>EN</button><button className={lang === 'zh' ? 'active' : ''} onClick={() => setLang('zh')} aria-pressed={lang === 'zh'}>中文</button></div>
-          <a className="github-pill" href="https://github.com/WayneZ01" target="_blank" rel="noreferrer"><span className="live-dot" aria-hidden="true" />GITHUB / WAYNEZ01 <span aria-hidden="true">↗</span></a>
-        </div>
-      </nav>
-
-      <section className="hero shell" id="top">
-        <div className="hero-copy">
-          <p className="eyebrow"><span>01</span> {t.heroLabel}</p>
-          <h1 className={lang === 'en' ? 'hero-en' : ''}><span>{t.hero[0]}</span><span>{t.hero[1]}</span><span className="gradient-text">{t.hero[2]}</span></h1>
-          <p className="hero-intro">{t.intro}</p>
-          <div className="hero-actions"><a className="primary-button" href="#projects">{t.explore} <span>↘</span></a><a className="text-link" href="https://blog.csdn.net/zhanwei0102" target="_blank" rel="noreferrer">{t.articles} <span>↗</span></a></div>
-        </div>
-
-        <div className="hero-visual" aria-label="Wayne developer card">
-          <div className="orbit orbit-a" aria-hidden="true" /><div className="orbit orbit-b" aria-hidden="true" />
-          <div className="code-card">
-            <div className="code-topbar"><span /><span /><span /><small>wayne.profile.ts</small></div>
-            <div className="code-body">
-              <div className="code-line"><span>01</span><code><b>const</b> wayne = {'{'}</code></div>
-              <div className="code-line"><span>02</span><code>  craft: <i>&apos;Android · iOS · AI · Web&apos;</i>,</code></div>
-              <div className="code-line"><span>03</span><code>  mode: <i>{t.codeMode}</i>,</code></div>
-              <div className="code-line"><span>04</span><code>  since: <em>2016</em>,</code></div>
-              <div className="code-line"><span>05</span><code>{'}'};</code></div>
-            </div>
-            <div className="code-status"><span>●</span> BUILDING THE NEXT THING</div>
-          </div>
-          <span className="float-tag tag-kotlin">KOTLIN</span><span className="float-tag tag-ios">SWIFT / iOS</span><span className="float-tag tag-ai">AI / AGENTS</span><span className="float-tag tag-web">WEB</span>
-        </div>
-      </section>
-
-      <section className="marquee" aria-label="Technology focus"><div>ANDROID <span>✦</span> iOS <span>✦</span> AI NATIVE <span>✦</span> WEB <span>✦</span> PRODUCT CRAFT <span>✦</span> ANDROID <span>✦</span> iOS <span>✦</span> AI NATIVE <span>✦</span> WEB <span>✦</span> PRODUCT CRAFT <span>✦</span></div></section>
-
-      <section className="metrics shell reveal" aria-label="GitHub stats">
-        <div><strong>213<sup>+</sup></strong><span>{t.metrics[0]}</span></div>
-        <div><strong>10<sup>Y</sup></strong><span>{t.metrics[1]}</span></div>
-        <div><strong>{repoStatus === 'live' ? totalStars : '29'}<sup>★</sup></strong><span>{t.metrics[2]}</span></div>
-        <div><strong>BEIJING</strong><span>{t.metrics[3]}</span></div>
-      </section>
-
-      <section className="section shell" id="projects">
-        <div className="section-head reveal">
-          <div><p className="eyebrow"><span>02</span> {t.projectsLabel}</p><h2>{t.projectsTitle}</h2></div>
-          <p>{t.projectsIntro}</p>
-        </div>
-
-        <div className="repo-toolbar reveal">
-          <div className="filters" aria-label={t.filtersLabel}>
-            {(['all', 'original', 'forks'] as const).map((key, index) => <button className={filter === key ? 'active' : ''} key={key} onClick={() => { setFilter(key); setVisible(9); }}>{t.filters[index]}</button>)}
-          </div>
-          <label className="search"><span aria-hidden="true">⌕</span><input value={query} onChange={event => { setQuery(event.target.value); setVisible(9); }} placeholder={t.search} aria-label={t.searchLabel} /></label>
-        </div>
-
-        <div className="repo-grid">
-          {filteredRepos.slice(0, visible).map((repo, index) => (
-            <article className="repo-card reveal" key={repo.id}>
-              <div className="repo-card-top"><span className="repo-index">{String(index + 1).padStart(2, '0')}</span><span className={repo.fork ? 'repo-kind fork' : 'repo-kind'}>{repo.fork ? 'FORK / RADAR' : 'ORIGINAL'}</span></div>
-              <h3>{repo.name}</h3>
-              <p>{repo.description || t.noDescription}</p>
-              <div className="repo-meta"><span className="language"><i />{repo.language || 'MULTI'}</span><span>★ {repo.stargazers_count}</span><span>⑂ {repo.forks_count}</span><span>{formatDate(repo.updated_at, lang)}</span></div>
-              <div className="repo-links"><a href={repo.html_url} target="_blank" rel="noreferrer">SOURCE ↗</a>{repo.homepage && <a href={repo.homepage} target="_blank" rel="noreferrer">LIVE ↗</a>}</div>
-            </article>
-          ))}
-        </div>
-        {filteredRepos.length === 0 && <p className="empty-state">{t.empty}</p>}
-        <div className="repo-footer reveal">
-          {visible < filteredRepos.length && <button className="load-more" onClick={() => setVisible(value => value + 9)}>{t.load} <span>+09</span></button>}
-          <a className="all-repos" href="https://github.com/WayneZ01?tab=repositories" target="_blank" rel="noreferrer">{t.allRepos}</a>
-          <small><span className={repoStatus === 'live' ? 'live-dot' : ''} /> {repoStatus === 'loading' ? t.connecting : repoStatus === 'live' ? `${t.live} · ${originals} ${t.originals}` : t.fallback}</small>
-        </div>
-      </section>
-
-      <section className="focus-section" id="focus">
-        <div className="shell">
-          <div className="section-head reveal"><div><p className="eyebrow"><span>03</span> {t.focusLabel}</p><h2>{t.focusTitle}</h2></div><p>{t.focusIntro}</p></div>
-          <div className="focus-grid">
-            {focusAreas.map(area => <article className="focus-card reveal" key={area.no}><span className="focus-no">{area.no}</span><span className="focus-glyph">{area.glyph}</span><h3>{area.title}</h3><p>{area[lang]}</p><div>{area.tags.map(tag => <span key={tag}>{tag}</span>)}</div></article>)}
-          </div>
-        </div>
-      </section>
-
-      <section className="about shell" id="about">
-        <div className="avatar-wrap reveal"><img src="https://avatars.githubusercontent.com/u/18587756?v=4" alt={t.avatar} /><span>AVAILABLE<br />FOR THE<br />NEXT IDEA</span></div>
-        <div className="about-copy reveal"><p className="eyebrow"><span>04</span> {t.aboutLabel}</p><blockquote>{t.quote}</blockquote><p>{t.about}</p><div className="social-row"><a href="https://github.com/WayneZ01" target="_blank" rel="noreferrer">GITHUB ↗</a><a href="https://blog.csdn.net/zhanwei0102" target="_blank" rel="noreferrer">CSDN ↗</a><a href="https://gist.github.com/WayneZ01" target="_blank" rel="noreferrer">GISTS ↗</a></div></div>
-      </section>
-
-      <section className="signal shell reveal">
-        <p>{t.idea}</p><h2>{t.signal}</h2><a href="https://github.com/WayneZ01" target="_blank" rel="noreferrer">START FROM GITHUB <b>↗</b></a>
-      </section>
-
-      <footer><div className="shell"><a className="brand" href="#top"><span className="brand-mark">W</span><span>WAYNE<span className="accent-dot">.</span></span></a><p>DESIGNED TO EVOLVE · POWERED BY OPEN SOURCE</p><div><span>© {new Date().getFullYear()} WAYNE</span><a href="#top">{t.back}</a></div></div></footer>
-    </main>
-  );
+  const filtered = useMemo(() => repos.filter(r => !r.archived && (filter === 'all' || (filter === 'original' ? !r.fork : r.fork)) && (r.name + ' ' + (r.description || '') + ' ' + (r.language || '')).toLowerCase().includes(query.toLowerCase())).sort((a, b) => (a.name === 'Android_open_project' ? -1 : b.name === 'Android_open_project' ? 1 : Number(a.fork) - Number(b.fork))), [repos, filter, query]);
+  function language(value: Lang) { setLang(value); try { localStorage.setItem('wayne-language', value); } catch {} }
+  function toggleTheme() { const next = theme === 'dark' ? 'light' : 'dark'; setTheme(next); try { localStorage.setItem('wayne-theme', next); } catch {} }
+  return <main id="top">
+    <Atmosphere />
+    <a className="skip" href="#about">{lang === 'en' ? 'Skip to content' : '跳到正文'}</a>
+    <header className="header">
+      <a href="#top" className="wordmark" aria-label="Wayne home">w<span>.</span></a>
+      <LiquidNav labels={t.nav} lang={lang} menu={menu} theme={theme} toggleTheme={toggleTheme} closeMenu={() => setMenu(false)} />
+      <div className="header-right"><div className="language" aria-label="Language"><button aria-pressed={lang === 'en'} onClick={() => language('en')}>EN</button><span>/</span><button aria-pressed={lang === 'zh'} onClick={() => language('zh')}>中</button></div><button className="menu-button" aria-label={t.menu} aria-expanded={menu} onClick={() => setMenu(!menu)}><Icon name="menu" /></button></div>
+    </header>
+    <section className="hero shell">
+      <div className="hero-panel glass">
+        <div className="hero-copy"><p className="eyebrow"><span className="status-dot" />{t.role}</p><p className="hello">{t.hello}</p><ShiningName /><h2>{t.headline}<br /><span>{t.headline2}</span></h2><p className="hero-description">{t.sub}</p><div className="hero-pills"><span><Icon name="pin" />Beijing, China <span className="utc">UTC +08</span></span><a href={GITHUB} target="_blank" rel="noreferrer"><Icon name="github" />@WayneZ01 <Arrow diagonal /></a></div><a href="#projects" className="button primary">{t.explore}<Arrow /></a></div>
+        <PortraitMotion><div className="portrait-halo" /><div className="portrait-frame"><img src="/developer-worlds.webp" width="800" height="800" alt={lang === 'en' ? 'Android, iOS, Web and AI in one glass sculpture' : '融合 Android、iOS、Web 与 AI 的玻璃雕塑'} fetchPriority="high" /><span className="portrait-caption">ANDROID / iOS / WEB / AI</span></div><a className="floating-badge badge-top glass" href={GITHUB + '/Android_open_project'} target="_blank" rel="noreferrer"><span className="badge-icon green"><Icon name="android" /></span><span><strong>Android & beyond</strong><small>{t.featured}</small></span><Arrow diagonal /></a><div className="floating-badge badge-bottom glass"><span className="badge-icon purple"><Icon name="ai" /></span><span><strong>Always curious.</strong><small>Mobile · AI · Web</small></span><span className="status-dot" /></div><span className="orbit-label">⌁&nbsp; A WORK IN PROGRESS</span></PortraitMotion>
+      </div>
+      <a href="#about" className="scroll-cue">{t.scroll}<span><Icon name="down" /></span></a>
+    </section>
+    <section className="section shell" id="about"><SectionTitle title={t.about} side={t.aboutSide} number="01" /><div className="about-grid"><div className="about-art glass"><span className="art-coordinates">39.90° N / 116.40° E</span><div className="art-orbits"><span>W</span></div><div className="art-bottom"><span className="status-dot" />BEIJING ↔ EVERYWHERE<Arrow diagonal /></div></div><div className="about-text"><span className="section-kicker">HELLO AGAIN.</span><p>{t.aboutText}</p><p className="muted">{t.aboutMore}</p><blockquote>“{t.quote}”</blockquote><a className="text-link" href={GITHUB} target="_blank" rel="noreferrer">{t.github}<Arrow diagonal /></a></div></div></section>
+    <section className="section shell" id="focus"><SectionTitle title={t.focuses} side={t.focusSide} number="02" /><div className="focus-grid">{focuses.map((f, i) => <article className={'focus-card glass ' + f.color} key={f.name}><div className="focus-top"><span className="focus-icon"><Icon name={f.icon} /></span><span>0{i + 1}</span></div><h3>{f.name}</h3><p>{f[lang]}</p><small>{f.tags}</small></article>)}</div></section>
+    <section className="section shell" id="journey"><SectionTitle title={t.journey} side={t.journeySide} number="03" /><div className="timeline">{journey.map(j => <article className="timeline-row" key={j.date}><span className="timeline-date">{j.date}</span><span className="timeline-icon glass"><Icon name={j.icon} /></span><div><h3>{j.title}</h3><p>{j[lang]}</p></div><span className="timeline-end"><Arrow diagonal /></span></article>)}</div></section>
+    <section className="section shell" id="projects"><SectionTitle title={t.projects} side={t.projectsSide} number="04" /><div className="project-tools"><div className="filters" aria-label={lang === 'en' ? 'Filter projects' : '筛选项目'}>{['all', 'original', 'forks'].map((f, i) => <button key={f} aria-pressed={filter === f} onClick={() => { setFilter(f); setLimit(6); }}>{t.filters[i]}</button>)}</div><label className="search"><Icon name="search" /><input value={query} onChange={e => { setQuery(e.target.value); setLimit(6); }} placeholder={t.search} aria-label={t.search} /></label></div><div className="project-grid">{filtered.slice(0, limit).map((r, i) => <article className="project-card glass" key={r.id}><div className="project-visual" data-color={i % 4}><span className="project-visual-number">0{(i % 9) + 1}</span><span className="project-symbol"><Icon name={r.language === 'Swift' ? 'ios' : r.name.includes('Android') || r.language === 'Kotlin' ? 'android' : /ai|agent/i.test(r.name) ? 'ai' : 'code'} /></span><span className="project-visual-caption">{r.language || 'OPEN SOURCE'}<Arrow diagonal /></span></div><div className="project-body"><div className="project-type"><span>{r.fork ? t.forkTag : t.originalTag}</span>{r.stargazers_count > 0 && <span>☆ {r.stargazers_count}</span>}</div><h3>{r.name.replaceAll('_', ' ')}</h3><p>{r.description || t.noDesc}</p><div className="project-links"><a href={r.html_url} target="_blank" rel="noreferrer">{t.source}<Arrow diagonal /></a>{r.homepage && /^https?:\/\//i.test(r.homepage) && <a href={r.homepage} target="_blank" rel="noreferrer">{t.live}<Arrow diagonal /></a>}</div></div></article>)}</div>{!filtered.length && <p className="empty">{t.none}</p>}<div className="project-footer"><span><i className={'tiny-dot ' + status} />{status === 'live' ? t.synced + ' · ' + repos.length + (lang === 'en' ? ' public repositories' : ' 个公开仓库') : status === 'loading' ? t.loading : t.snapshot}</span>{limit < filtered.length && <button className="button subtle" onClick={() => setLimit(v => v + 6)}>{t.more}<span>+</span></button>}<a className="text-link" href={GITHUB + '?tab=repositories'} target="_blank" rel="noreferrer">GitHub<Arrow diagonal /></a></div></section>
+    <div className="tech-ribbon" aria-hidden="true"><div>{Array.from({ length: 2 }, (_, i) => <span key={i}>Kotlin <b>✦</b> Swift <b>✦</b> Android <b>✦</b> React <b>✦</b> TypeScript <b>✦</b> AI Agents <b>✦</b> Open Source <b>✦</b></span>)}</div></div>
+    <section className="section shell" id="writing"><SectionTitle title={t.writing} side={t.writingSide} number="05" /><a className="writing-panel glass" href="https://blog.csdn.net/zhanwei0102" target="_blank" rel="noreferrer"><div><span className="section-kicker">THE DIGITAL NOTEBOOK</span><h3>{t.writingTitle}</h3><p>{t.writingText}</p><span className="button subtle">{t.read}<Arrow diagonal /></span></div><div className="notebook" aria-hidden="true"><span>FIELD NOTES</span><strong>Ideas,<br />in motion<span>.</span></strong><div className="notebook-lines" /><small>WAYNE / CSDN</small></div></a></section>
+    <section className="section shell connect" id="links"><SectionTitle title={t.connect} side={t.connectSide} number="06" /><div className="connect-panel glass"><span className="section-kicker"><span className="status-dot" /> OPEN TO GOOD IDEAS</span><h2>{t.connectTitle}</h2><p>{t.connectText}</p><div className="social-links"><a href={GITHUB} target="_blank" rel="noreferrer"><span><Icon name="github" /></span><div><strong>GitHub</strong><small>@WayneZ01</small></div><Arrow diagonal /></a><a href="https://blog.csdn.net/zhanwei0102" target="_blank" rel="noreferrer"><span><Icon name="pen" /></span><div><strong>CSDN</strong><small>Notes & articles</small></div><Arrow diagonal /></a><a href="https://gist.github.com/WayneZ01" target="_blank" rel="noreferrer"><span><Icon name="code" /></span><div><strong>Gists</strong><small>Small pieces of code</small></div><Arrow diagonal /></a></div></div></section>
+    <footer className="shell"><a className="footer-logo" href="#top">Wayne<span>.</span></a><p>{t.footer}<small>© {new Date().getFullYear()} Wayne</small></p><a className="text-link" href="#top">{t.back}<Icon name="up" /></a></footer>
+  </main>;
 }
+function SectionTitle({ title, side, number }: { title: string; side: string; number: string }) { return <div className="section-heading"><div><span className="section-number">{number} /</span><h2>{title}<span>.</span></h2></div><p>{side}</p></div>; }

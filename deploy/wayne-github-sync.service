@@ -1,0 +1,15 @@
+[Unit]
+Description=Refresh Wayne portfolio public GitHub metadata
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+WorkingDirectory=/var/www/wayne-portfolio
+ExecStart=/usr/bin/node /var/www/wayne-portfolio/update-github.mjs /var/www/wayne-portfolio/current/data/repos.json
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/www/wayne-portfolio

@@ -2,25 +2,26 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Wayne — Build · Explore · Reshape Possibility',
+  title: 'Wayne — Developer, Explorer & Builder',
   description: 'Wayne’s personal blog and digital portfolio across Android, iOS, AI, the Web, and open source.',
-  metadataBase: new URL('https://waynez01.github.io'),
+  metadataBase: new URL('https://www.dyw2.xyz'),
+  alternates: { canonical: 'https://www.dyw2.xyz/' },
   openGraph: {
-    title: 'Wayne — Build · Explore · Reshape Possibility',
+    title: 'Wayne — Developer, Explorer & Builder',
     description: 'Android × iOS × AI × Web. Wayne’s personal blog and digital portfolio.',
-    url: 'https://waynez01.github.io',
+    url: 'https://www.dyw2.xyz',
     siteName: 'Wayne / Digital Garden',
-    locale: 'zh_CN',
+    locale: 'en_US',
     type: 'website',
-    images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'WAYNE. 构建 · 探索 · 重塑可能' }],
+    images: [{ url: '/developer-worlds.webp', width: 800, height: 800, alt: 'Wayne — Android, iOS, Web and AI' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Wayne — Build · Explore · Reshape Possibility',
+    title: 'Wayne — Developer, Explorer & Builder',
     description: 'Android × iOS × AI × Web. Wayne’s personal blog and digital portfolio.',
-    images: ['/og.jpg'],
+    images: ['/developer-worlds.webp'],
   },
-  icons: { icon: 'https://avatars.githubusercontent.com/u/18587756?v=4' },
+  icons: { icon: '/developer-favicon.png' },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -1,27 +1,24 @@
-# WAYNE. — Personal Blog
+# Wayne
 
-Wayne 的个人博客与数字作品集：Android × iOS × AI × Web。默认英文，支持手动切换中文。
+个人网站，分享 Android、iOS、AI、Web 相关项目与技术笔记。
 
-- 线上地址：<https://waynez01.github.io/>
+- 网站：<https://www.dyw2.xyz>
 - GitHub：<https://github.com/WayneZ01>
 - 文章：<https://blog.csdn.net/zhanwei0102>
-- 维护手册：[BLOG_GUIDE.md](./BLOG_GUIDE.md)
+- 支持中英文切换，GitHub 项目每日自动更新。
 
 ## 本地运行
 
-需要 Node.js 22+ 和 pnpm。
-
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-打开 <http://localhost:3000/>。
-
-## 构建
+## 构建与发布
 
 ```bash
 pnpm build
+bash scripts/deploy.sh
 ```
 
-静态文件会生成到 `out/`。推送到 `main` 分支后，GitHub Actions 会自动发布到 GitHub Pages。
+详细操作见[维护手册](BLOG_GUIDE.md)。
