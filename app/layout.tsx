@@ -20,7 +20,11 @@ export const metadata: Metadata = {
     description: 'Android × iOS × AI × Web. Wayne’s personal blog and digital portfolio.',
     images: ['/og.jpg'],
   },
-  icons: { icon: 'https://avatars.githubusercontent.com/u/18587756?v=4' },
+  icons: {
+    icon: [{ url: '/favicon.png?v=20261030', type: 'image/png', sizes: '64x64' }],
+    shortcut: '/favicon.png?v=20261030',
+    apple: [{ url: '/apple-touch-icon.png?v=20261030', type: 'image/png', sizes: '180x180' }],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
